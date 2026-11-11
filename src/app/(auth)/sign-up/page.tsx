@@ -167,8 +167,6 @@ const Page = () => {
                       setUserNameMessage("")
                       setIsUserNameAvailable(false)
                       setCheckedUserName("")
-                      // only ask the server about names that are already valid —
-                      // format problems are shown instantly by the field error
                       const isValidFormat =
                         userNameValidation.safeParse(nextUserName).success
                       setIsCheckingUserName(isValidFormat)
@@ -215,7 +213,7 @@ const Page = () => {
                     ) : fieldState.error ? (
                       ""
                     ) : (
-                      "Letters and numbers only — this becomes your link, /u/yourname"
+                      "Letters and numbers only"
                     )}
                   </FieldDescription>
                 </Field>
