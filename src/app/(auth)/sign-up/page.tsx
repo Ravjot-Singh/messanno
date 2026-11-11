@@ -90,8 +90,8 @@ const Page = () => {
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     if (
       isCheckingUserName ||
-      userName !== data.userName ||
-      checkedUserName !== data.userName ||
+      userName.trim() !== data.userName ||
+      checkedUserName.trim() !== data.userName ||
       !isUserNameAvailable
     ) {
       toast.error("Please choose an available username.")
