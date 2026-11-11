@@ -10,34 +10,30 @@ const UsernameQuerySchema = z.object({
 
 export async function GET(request: Request) {
 
-    
-    
+        
     const { searchParams } = new URL(request.url);
+
+    const result = UsernameQuerySchema.safeParse({
+        userName: searchParams.get('userName') ?? ''
+    });
+
+    if (!result.success) {
+        const userNameErrors = z.treeifyError(result.error).properties?.userName?.errors ?? [];
+
+        return Response.json({
+            success: false,
+            message: userNameErrors.length > 0 ? userNameErrors[0] : "Invalid username",
+
+        },
+            {
+                status: 400
+            }
+        )
+    }
 
     try {
 
         await dbConnect();
-
-        const queryParam = {
-            userName: searchParams.get('userName')
-        }
-
-        const result = UsernameQuerySchema.safeParse(queryParam);
-
-        if (!result.success) {
-            const userNameErrors = z.treeifyError(result.error).properties?.userName?.errors ?? [];
-
-            return Response.json({
-                success: false,
-                message: userNameErrors?.length > 0 ? userNameErrors?.join(',') : "Invalid username",
-
-            },
-                {
-                    status: 400
-                }
-            )
-        }
-
 
         const { userName } = result.data;
 
@@ -71,7 +67,7 @@ export async function GET(request: Request) {
         console.error("Error checking user name: ", error);
         return Response.json({
             success: false,
-            message: "Error checking username"
+            message: "Couldn't check this username right now. Please try again."
         },
             {
                 status: 500

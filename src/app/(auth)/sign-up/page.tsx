@@ -6,7 +6,7 @@ import * as z from "zod"
 import { useDebounceCallback } from "usehooks-ts"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { signUpSchema } from "@/schemas/signUpSchema"
+import { signUpSchema, userNameValidation } from "@/schemas/signUpSchema"
 import axios, { AxiosError } from "axios"
 import { ApiResponse } from "@/types/ApiResponse"
 import { Controller, useForm } from "react-hook-form"
@@ -64,7 +64,8 @@ const Page = () => {
         const axiosError = error as AxiosError<ApiResponse>
         if (requestId === usernameCheckId.current) {
           setUserNameMessage(
-            axiosError.response?.data.message ?? "Error checking username"
+            axiosError.response?.data?.message ??
+              "Couldn't check this username right now. Please try again."
           )
           setIsUserNameAvailable(false)
           setCheckedUserName(username)
@@ -166,9 +167,13 @@ const Page = () => {
                       setUserNameMessage("")
                       setIsUserNameAvailable(false)
                       setCheckedUserName("")
-                      setIsCheckingUserName(nextUserName.length > 0)
+                      // only ask the server about names that are already valid —
+                      // format problems are shown instantly by the field error
+                      const isValidFormat =
+                        userNameValidation.safeParse(nextUserName).success
+                      setIsCheckingUserName(isValidFormat)
 
-                      if (nextUserName.length > 0) {
+                      if (isValidFormat) {
                         debouncedCheckUserName(nextUserName, requestId)
                       } else {
                         debouncedCheckUserName.cancel()
@@ -207,8 +212,10 @@ const Page = () => {
                         )}
                         {userNameMessage}
                       </span>
-                    ) : (
+                    ) : fieldState.error ? (
                       ""
+                    ) : (
+                      "Letters and numbers only — this becomes your link, /u/yourname"
                     )}
                   </FieldDescription>
                 </Field>
